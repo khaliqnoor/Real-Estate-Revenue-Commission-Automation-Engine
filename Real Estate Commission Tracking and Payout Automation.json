@@ -1,0 +1,1847 @@
+{
+  "name": "Real Estate Commission Tracking and Payout Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "deal-submission",
+        "options": {}
+      },
+      "id": "e25ff4df-aa01-44e4-9600-56318f74b93f",
+      "name": "Deal Submission Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1104,
+        688
+      ],
+      "webhookId": "0cd601cf-7cfd-406b-8c11-83f17fc371c2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "brokerEmail",
+              "value": "khaliqnoorkhan47@gmail.com ",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "financeEmail",
+              "value": "allcourses89@gmail.com",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "approvalWebhookUrl",
+              "value": "https://sufyan121121.app.n8n.cloud/webhook/deal-approval",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b7745703-99d1-46c2-8717-3d1238d6d169",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -848,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $('Deal Submission Webhook').item.json.body.data.fields[0].value }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "id-2",
+              "leftValue": "={{ $('Deal Submission Webhook').item.json.body.data.submissionId }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "id-3",
+              "leftValue": "={{ $('Deal Submission Webhook').item.json.body.data.fields[2].value }}",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "id-4",
+              "leftValue": "={{ $('Deal Submission Webhook').item.json.body.data.fields[3].value }}",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "id-5",
+              "leftValue": "={{ $('Deal Submission Webhook').item.json.body.data.fields[4].type }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "id-6",
+              "leftValue": "={{ $('Deal Submission Webhook').item.json.body.data.fields[8].value }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c0911682-556d-49dd-8154-515a33936cdd",
+      "name": "Validate Required Fields",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -608,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "errorMessage": "Missing required fields. Please provide: agentName, dealId, propertyPrice, commissionPercent, agentLevel, closingDate"
+      },
+      "id": "12fe85f5-f570-4fe2-825a-9ea16c75fcda",
+      "name": "Stop - Missing Fields",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"error\": \"Missing required fields\",\n  \"message\": \"Please provide: agentName, dealId, propertyPrice, commissionPercent, agentLevel, closingDate\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "5506b949-c2fe-4c93-97f0-b431c4bbda99",
+      "name": "Return Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -976,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "agentName",
+              "value": "={{ $('Deal Submission Webhook').item.json.body.data.fields[0].value }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "dealId",
+              "value": "=DAL-2026-{{ $('Deal Submission Webhook').item.json.body.data.submissionId }}\n",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "propertyPrice",
+              "value": "={{ $('Deal Submission Webhook').item.json.body.data.fields[2].value }}",
+              "type": "number"
+            },
+            {
+              "id": "id-4",
+              "name": "commissionPercent",
+              "value": "={{ $('Deal Submission Webhook').item.json.body.data.fields[3].value }}",
+              "type": "number"
+            },
+            {
+              "id": "id-5",
+              "name": "agentLevel",
+              "value": "={{ $('Deal Submission Webhook').item.json.body.data.fields[4].value[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-6",
+              "name": "referralAgent",
+              "value": "={{ $('Deal Submission Webhook').item.json.body.data.fields[7].value }}",
+              "type": "string"
+            },
+            {
+              "id": "id-7",
+              "name": "closingDate",
+              "value": "={{ $('Deal Submission Webhook').item.json.body.data.fields[8].value }}",
+              "type": "string"
+            },
+            {
+              "id": "id-8",
+              "name": "agentEmail",
+              "value": "={{ $('Deal Submission Webhook').item.json.body.data.fields[1].value }}",
+              "type": "string"
+            },
+            {
+              "id": "0f413b9b-aa9d-4819-a87a-ee9f56e0ff37",
+              "name": "clientName",
+              "value": "={{ $('Deal Submission Webhook').item.json.body.data.fields[5].value }}",
+              "type": "string"
+            },
+            {
+              "id": "72fb0882-ecd0-42b4-88a6-9d9f4da65b2f",
+              "name": "propertyAddress",
+              "value": "={{ $('Deal Submission Webhook').item.json.body.data.fields[6].value }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3743f991-73c8-43e9-9550-1bbac48f54d6",
+      "name": "Clean and Structure Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -352,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const propertyPrice = $json.propertyPrice;\nconst commissionPercent = $json.commissionPercent;\nconst agentLevel = $json.agentLevel;\nconst referralAgent = $json.referralAgent;\n\n// Calculate total commission\nconst totalCommission = (propertyPrice * commissionPercent) / 100;\n\n// Determine agent split percentage\nconst agentSplitPercent = agentLevel.toLowerCase() === 'senior' ? 60 : 50;\n\n// Calculate base agent payout\nlet agentPayout = (totalCommission * agentSplitPercent) / 100;\n\n// Calculate referral bonus if referral agent exists\nlet referralBonus = 0;\nif (referralAgent && referralAgent.trim() !== '') {\n  referralBonus = (totalCommission * 5) / 100;\n  agentPayout -= referralBonus;\n}\n\n// Calculate broker share\nconst brokerShare = totalCommission - agentPayout - referralBonus;\n\n// Round all values to 2 decimal places\nreturn {\n  json: {\n    agentName: $json.agentName || '',\n    agentEmail: $json.agentEmail || '',\n    dealId: $json.dealId || '',\n    propertyPrice: Number($json.propertyPrice) || 0,\n    commissionPercent: Number($json.commissionPercent) || 0,\n    agentLevel: $json.agentLevel || '',\n    referralAgent: $json.referralAgent || '',\n    closingDate: $json.closingDate || '',\n\n    totalCommission: Number(((($json.propertyPrice || 0) * ($json.commissionPercent || 0)) / 100).toFixed(2)),\n    agentSplitPercent: ($json.agentLevel || '').toLowerCase() === 'senior' ? 60 : 50,\n    agentPayout: (() => {\n      const totalCommission = (($json.propertyPrice || 0) * ($json.commissionPercent || 0)) / 100;\n      const agentSplitPercent = ($json.agentLevel || '').toLowerCase() === 'senior' ? 60 : 50;\n      let payout = (totalCommission * agentSplitPercent) / 100;\n      if ($json.referralAgent && $json.referralAgent.trim() !== '') {\n        const referralBonus = (totalCommission * 5) / 100;\n        payout -= referralBonus;\n      }\n      return Number(payout.toFixed(2));\n    })(),\n    brokerShare: (() => {\n      const totalCommission = (($json.propertyPrice || 0) * ($json.commissionPercent || 0)) / 100;\n      let payout = (totalCommission * (($json.agentLevel || '').toLowerCase() === 'senior' ? 60 : 50)) / 100;\n      const referralBonus = $json.referralAgent && $json.referralAgent.trim() !== '' ? (totalCommission * 5) / 100 : 0;\n      return Number((totalCommission - payout - referralBonus).toFixed(2));\n    })(),\n    referralBonus: (() => {\n      const totalCommission = (($json.propertyPrice || 0) * ($json.commissionPercent || 0)) / 100;\n      return $json.referralAgent && $json.referralAgent.trim() !== '' ? Number((totalCommission * 0.05).toFixed(2)) : 0;\n    })()\n  }\n};\n\n\n"
+      },
+      "id": "e0dd7a6a-9fe0-486f-bc25-a510c67da92d",
+      "name": "Calculate Commissions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.dealId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "35784a9d-4315-4b03-9efa-028549215dab",
+      "name": "Check for Duplicate Deal ID",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        96,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1gTSotQq8eU4PAhdwL54TDg1MoYxeop-grYboSUdr3fY",
+          "mode": "list",
+          "cachedResultName": "Real Estate Deals",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gTSotQq8eU4PAhdwL54TDg1MoYxeop-grYboSUdr3fY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Deals",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gTSotQq8eU4PAhdwL54TDg1MoYxeop-grYboSUdr3fY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Deal ID": "={{ $json.dealId }}",
+            "Agent Name": "={{ $json.agentName }}",
+            "Agent Email": "={{ $json.agentEmail }}",
+            "Property Price": "={{ $json.propertyPrice }}",
+            "Total Commission": "={{ $json.totalCommission }}",
+            "Agent Payout": "={{ $json.agentPayout }}",
+            "Broker Share": "={{ $json.brokerShare }}",
+            "Referral Bonus": "={{ $json.referralBonus }}",
+            "Client Name": "={{ $('Clean and Structure Data').item.json.clientName }}",
+            "Property Address": "={{ $('Clean and Structure Data').item.json.propertyAddress }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Deal ID",
+              "displayName": "Deal ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Agent Name",
+              "displayName": "Agent Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Agent Email",
+              "displayName": "Agent Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Property Price",
+              "displayName": "Property Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Commission",
+              "displayName": "Total Commission",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Agent Payout",
+              "displayName": "Agent Payout",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Broker Share",
+              "displayName": "Broker Share",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Referral Bonus",
+              "displayName": "Referral Bonus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Property Address",
+              "displayName": "Property Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "941e8b46-9f9b-478b-94b4-cf7d3bb5108f",
+      "name": "Store Deal in Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        400,
+        960
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cZcDOBmOrJgF8Qq5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "to",
+              "value": "={{ $json['Agent Email'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "subject",
+              "value": "=Deal Submission Confirmed - {{ $json['Deal ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "message",
+              "value": "=<h2>Deal Submission Confirmed</h2>\n<p>Dear {{ $json['Agent Name'] }},</p>\n\n<p>Your deal submission has been received and is pending broker approval.</p>\n\n<h3>Deal Details:</h3>\n<ul>\n  <li><strong>Deal ID:</strong> {{ $json['Deal ID'] }}</li>\n  <li><strong>Property Price:</strong> ${{ $json['Property Price'] }}</li>\n  <li><strong>Total Commission:</strong> ${{ $json['Total Commission'] }}</li>\n  <li><strong>Your Estimated Payout:</strong> ${{ $json['Agent Payout'] }}</li>\n\n{{\n  Number($json['Referral Bonus']) > 0\n    ? `<li><strong>Referral Bonus:</strong> $${$json['Referral Bonus']}</li>`\n    : ''\n}}\n\n  <li><strong>Closing Date:</strong> {{ $('Check for Duplicate Deal ID').item.json.closingDate }}</li>\n</ul>\n\n<p>You will be notified once the broker reviews your submission.</p>\n\n<p>Best regards,<br>Real Estate Brokerage</p>\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d1f2fc88-51f9-446f-ba67-e01592ac241d",
+      "name": "Prepare Agent Email",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.message }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "94589427-bd91-4b2f-ae52-9c11bd44dafd",
+      "name": "Email Agent - Confirmation",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1008,
+        608
+      ],
+      "webhookId": "567f3886-14d3-4933-9164-2cc94cc62664",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "U5rPhjnGKLc7XmPa",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "to",
+              "value": "={{ $('Workflow Configuration').item.json.brokerEmail }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "subject",
+              "value": "=New Deal Awaiting Approval - {{ $json['Deal ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "message",
+              "value": "=<h2>New Deal Requires Your Approval</h2>\n\n<p>A new deal has been submitted and needs your review.</p>\n\n<h3>Deal Details:</h3>\n<ul>\n  <li><strong>Deal ID:</strong> {{ $json['Deal ID'] }}</li>\n\n  <li>\n    <strong>Agent:</strong> \n    {{ $json['Agent Name'] }} \n    ({{ $('Check for Duplicate Deal ID').item.json.agentLevel }})\n  </li>\n\n  <li><strong>Property Price:</strong> ${{ $json['Property Price'] }}</li>\n  <li><strong>Total Commission:</strong> ${{ $json['Total Commission'] }}</li>\n  <li><strong>Agent Payout:</strong> ${{ $json['Agent Payout'] }}</li>\n  <li><strong>Broker Share:</strong> ${{ $json['Broker Share'] }}</li>\n\n  {{\n    Number($json['Referral Bonus']) > 0\n      ? `<li><strong>Referral Bonus:</strong> $${Number($json['Referral Bonus']).toLocaleString()} (to ${$json['Referral Agent']})</li>`\n      : ''\n  }}\n\n  <li>\n    <strong>Closing Date:</strong> \n    {{ $('Check for Duplicate Deal ID').item.json.closingDate }}\n  </li>\n</ul>\n\n<h3>Action Required:</h3>\n\n<p>\n  <a \n    href=\"{{$execution.resumeUrl}}?decision=approved\" \n    style=\"background-color:#4CAF50;color:white;padding:10px 20px;text-decoration:none;margin-right:10px;border-radius:5px;\"\n  >\n    Approve\n  </a>\n\n  <a \n    href=\"{{ $execution.resumeUrl }}?decision=rejected\" \n    style=\"background-color:#f44336;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;\"\n  >\n    Reject\n  </a>\n</p>\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0aa3bc93-001d-4479-b46b-b994962e627a",
+      "name": "Prepare Broker Email",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.message }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "59bf5062-2b42-45c4-ac12-0a642c225396",
+      "name": "Email Broker - Approval Needed",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1008,
+        848
+      ],
+      "webhookId": "5a6f53d0-51c5-4f94-9ff9-272a292c3801",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "U5rPhjnGKLc7XmPa",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "to",
+              "value": "=",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "subject",
+              "value": "={{ 'Payout Breakdown - Deal ' + $json['Deal ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "message",
+              "value": "=<h2>Payout Breakdown for Deal {{ $json['Deal ID'] }}</h2>\n\n<p>A new deal has been submitted. Below is the payout breakdown for your records.</p>\n\n<h3>Deal Information:</h3>\n<ul>\n  <li><strong>Deal ID:</strong> {{ $json['Deal ID'] }}</li>\n  <li><strong>Agent:</strong> {{ $json['Agent Name'] }}</li>\n  <li><strong>Property Price:</strong> ${{ $json['Property Price'] }}</li>\n  <li><strong>Commission Rate:</strong> {{ $('Check for Duplicate Deal ID').item.json.commissionPercent }}%</li>\n</ul>\n\n<h3>Payout Breakdown:</h3>\n\n<table border=\"1\" cellpadding=\"10\" style=\"border-collapse: collapse; width:100%;\">\n  <tr>\n    <th>Category</th>\n    <th>Amount</th>\n  </tr>\n\n  <tr>\n    <td>Total Commission</td>\n    <td>${{ $json['Total Commission'] }}</td>\n  </tr>\n\n  <tr>\n    <td>Agent Payout ({{ $('Check for Duplicate Deal ID').item.json.agentSplitPercent }}%)</td>\n    <td>${{ $json['Agent Payout'] }}</td>\n  </tr>\n\n  <tr>\n    <td>Broker Share</td>\n    <td>${{ $json['Broker Share'] }}</td>\n  </tr>\n\n{{\n  Number($json['Referral Bonus']) > 0\n    ? `<tr>\n         <td>Referral Bonus (to ${$json['Referral Agent']})</td>\n         <td>$${Number($json['Referral Bonus']).toLocaleString()}</td>\n       </tr>`\n    : ''\n}}\n\n</table>\n\n<p><em>Note: This deal is pending broker approval. Payout will be processed once the deal is approved.</em></p>\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5431322b-424c-4bb1-a582-727fb8968302",
+      "name": "Prepare Finance Email",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        784,
+        1088
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Workflow Configuration').item.json.financeEmail }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.message }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "e05c61b9-c8e9-43cd-92d5-95037dcae318",
+      "name": "Email Finance - Payout Details",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1008,
+        1088
+      ],
+      "webhookId": "d25e40e5-6232-4049-936b-022209cb0fcf",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "U5rPhjnGKLc7XmPa",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "id": "971365c3-e784-4b10-a0bc-c901ed1743ab",
+      "name": "Merge Notification Branches",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1216,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "limitWaitTime": true,
+        "resumeAmount": 7,
+        "resumeUnit": "days",
+        "options": {
+          "webhookSuffix": ""
+        }
+      },
+      "id": "803896d7-4760-4a28-8669-64c60f655df4",
+      "name": "Wait for Broker Approval",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1456,
+        864
+      ],
+      "webhookId": "3dc4ec2d-d450-4f5a-b920-540590f407b0",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "notes": "\n"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.query.decision}}",
+                    "rightValue": "approved",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ccd88fa0-e1ba-4fc0-9812-1ff8fba46f47"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Approved"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.decision }}",
+                    "rightValue": "rejected",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "46b54dc9-ad00-4bd8-9181-6f4afbf0c70e"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Rejected"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7481c538-c0a2-4a59-8557-c1155798175d",
+      "name": "Route by Approval Decision",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1696,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "status",
+              "value": "Rejected",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "dealId",
+              "value": "={{ $('Store Deal in Google Sheets').item.json['Deal ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "rejectionTimestamp",
+              "value": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "23ea86c3-6696-47e1-8960-a9a77be9d3b7",
+      "name": "Update Status - Rejected",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1904,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1gTSotQq8eU4PAhdwL54TDg1MoYxeop-grYboSUdr3fY",
+          "mode": "list",
+          "cachedResultName": "Real Estate Deals",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gTSotQq8eU4PAhdwL54TDg1MoYxeop-grYboSUdr3fY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Deals",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gTSotQq8eU4PAhdwL54TDg1MoYxeop-grYboSUdr3fY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.status }}",
+            "Timestamp": "={{ $json.rejectionTimestamp }}",
+            "Deal ID": "={{ $('Store Deal in Google Sheets').item.json['Deal ID'] }}"
+          },
+          "matchingColumns": [
+            "Deal ID"
+          ],
+          "schema": [
+            {
+              "id": "Deal ID",
+              "displayName": "Deal ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Agent Name",
+              "displayName": "Agent Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Agent Email",
+              "displayName": "Agent Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Property Price",
+              "displayName": "Property Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total Commission",
+              "displayName": "Total Commission",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Agent Payout",
+              "displayName": "Agent Payout",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Broker Share",
+              "displayName": "Broker Share",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Referral Bonus",
+              "displayName": "Referral Bonus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "34bad253-d583-4d51-bbe7-fff77f2916d7",
+      "name": "Update Sheet - Rejected",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2112,
+        672
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cZcDOBmOrJgF8Qq5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Store Deal in Google Sheets').item.json['Agent Email'] }}",
+        "subject": "={{ 'Deal Rejected - ' + $('Store Deal in Google Sheets').item.json['Deal ID'] }}",
+        "message": "={{ `\n  <h2 style=\"color:#d9534f;\">Deal Rejection Notice</h2>\n  <p>Dear Agent,</p>\n  <p>We regret to inform you that your deal submission <strong>${$json['Deal ID']}</strong> has been rejected by the broker.</p>\n  <p>Please reach out to the broker directly for further details.</p>\n  <p>Best regards,<br><strong>Real Estate Brokerage Team</strong></p>\n` }}\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c783ebb2-e07d-4bdb-aa1f-9a4f3ec9c39e",
+      "name": "Email Agent - Rejection Notice",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2336,
+        672
+      ],
+      "webhookId": "b57dbaa8-acc1-4a17-b263-9a70f954ae0a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "U5rPhjnGKLc7XmPa",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "status",
+              "value": "Approved",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "dealId",
+              "value": "={{ $('Store Deal in Google Sheets').item.json['Deal ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "approvalTimestamp",
+              "value": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ef48d6ad-02f0-42c6-8f0e-d8fb2365743c",
+      "name": "Update Status - Approved",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1920,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1gTSotQq8eU4PAhdwL54TDg1MoYxeop-grYboSUdr3fY",
+          "mode": "list",
+          "cachedResultName": "Real Estate Deals",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gTSotQq8eU4PAhdwL54TDg1MoYxeop-grYboSUdr3fY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Deals",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gTSotQq8eU4PAhdwL54TDg1MoYxeop-grYboSUdr3fY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.status }}",
+            "Timestamp": "={{ $json.approvalTimestamp }}",
+            "Deal ID": "={{ $('Store Deal in Google Sheets').item.json['Deal ID'] }}"
+          },
+          "matchingColumns": [
+            "Deal ID"
+          ],
+          "schema": [
+            {
+              "id": "Deal ID",
+              "displayName": "Deal ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Agent Name",
+              "displayName": "Agent Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Agent Email",
+              "displayName": "Agent Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Property Price",
+              "displayName": "Property Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total Commission",
+              "displayName": "Total Commission",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Agent Payout",
+              "displayName": "Agent Payout",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Broker Share",
+              "displayName": "Broker Share",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Referral Bonus",
+              "displayName": "Referral Bonus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "ff3ea8b0-3355-4a02-a421-f8545f8cc14f",
+      "name": "Update Sheet - Approved",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2144,
+        944
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cZcDOBmOrJgF8Qq5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "payoutType",
+              "value": "commission",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "dealId",
+              "value": "={{ $json['Deal ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "agentName",
+              "value": "={{ $('Store Deal in Google Sheets').item.json['Agent Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "amount",
+              "value": "={{ $('Store Deal in Google Sheets').item.json['Agent Payout'] }}",
+              "type": "number"
+            },
+            {
+              "id": "id-5",
+              "name": "referralBonus",
+              "value": "={{ $('Store Deal in Google Sheets').item.json['Referral Bonus'] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fd3d8ecf-16f1-45a8-a075-b6efc8266ef4",
+      "name": "Prepare Payout Instructions",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2336,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/0c4d3555-3a20-4f9c-a68a-616dbbd334f7",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"dealId\": $json.dealId, \"agentName\": $json.agentName, \"payoutAmount\": $json.amount, \"referralBonus\": $json.referralBonus, \"referralAgent\": $json.referralAgent, \"payoutType\": $json.payoutType } }}",
+        "options": {}
+      },
+      "id": "a92eff76-f26c-49e6-b919-a053f7e48629",
+      "name": "Send Payout to Finance System",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2560,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "status",
+              "value": "Paid",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "dealId",
+              "value": "={{ $('Update Sheet - Approved').item.json['Deal ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "payoutTimestamp",
+              "value": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ecad7104-2936-4517-b248-5326241878d2",
+      "name": "Update Status - Paid",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2784,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1gTSotQq8eU4PAhdwL54TDg1MoYxeop-grYboSUdr3fY",
+          "mode": "list",
+          "cachedResultName": "Real Estate Deals",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gTSotQq8eU4PAhdwL54TDg1MoYxeop-grYboSUdr3fY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Deals",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gTSotQq8eU4PAhdwL54TDg1MoYxeop-grYboSUdr3fY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.status }}",
+            "Deal ID": "={{ $json.dealId }}"
+          },
+          "matchingColumns": [
+            "Deal ID"
+          ],
+          "schema": [
+            {
+              "id": "Deal ID",
+              "displayName": "Deal ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Agent Name",
+              "displayName": "Agent Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Agent Email",
+              "displayName": "Agent Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Property Price",
+              "displayName": "Property Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total Commission",
+              "displayName": "Total Commission",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Agent Payout",
+              "displayName": "Agent Payout",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Broker Share",
+              "displayName": "Broker Share",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Referral Bonus",
+              "displayName": "Referral Bonus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f484fb09-203b-47c4-bd9b-4db84009a66f",
+      "name": "Update Sheet - Paid",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3008,
+        944
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cZcDOBmOrJgF8Qq5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Store Deal in Google Sheets').item.json['Agent Email'] }}",
+        "subject": "={{ 'Payout Complete - Deal ' + $json['Deal ID'] }}",
+        "message": "={{ `<h2 style=\"color:#2e7d32;\">Payout Completed</h2>\n<p>Dear Agent,</p>\n\n<p>Great news! Your commission payout for deal <strong> $json['Deal ID'] </strong> has been successfully processed.</p>\n\n<p>The funds will be reflected in your account within <strong>2–3 business days</strong>.</p>\n\n<p>We truly appreciate your dedication and hard work. Thank you for being a valued part of our team.</p>\n\n<p>Best regards,<br>\nReal Estate Brokerage</p>` }}\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "2c5cf616-1ab4-4443-ac54-aec0ed72daee",
+      "name": "Email Agent - Payout Complete",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        3248,
+        944
+      ],
+      "webhookId": "3393b429-ba37-4755-bc50-aa6deaf30bd8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "U5rPhjnGKLc7XmPa",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Deal Submission Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "sufyan121121.app.n8n.cloud",
+            "user-agent": "Tally Webhooks",
+            "content-length": "1277",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "baggage": "sentry-environment=production,sentry-release=c6942fb7a55236cfd481fc9bb4a15893381718d1,sentry-public_key=6af4b6673f1648edaa8fef3f2ca43405,sentry-trace_id=34b7484071500270f686cb66ed99b6d4,sentry-org_id=407628,sentry-sampled=false,sentry-sample_rand=0.4512687216504846,sentry-sample_rate=0",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.96.62.112",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "BE",
+            "cf-ray": "9d074192b11e9557-LHR",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "sentry-trace": "34b7484071500270f686cb66ed99b6d4-12d91479867b4a74-0",
+            "x-forwarded-for": "34.96.62.112, 172.70.162.217",
+            "x-forwarded-host": "sufyan121121.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-110-ff8dc485b-7j99h",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.96.62.112"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "eventId": "985dfc3a-e467-450f-9041-e5c40370d9cf",
+            "eventType": "FORM_RESPONSE",
+            "createdAt": "2026-02-19T16:49:12.046Z",
+            "data": {
+              "responseId": "A7ZggZz",
+              "submissionId": "A7ZggZz",
+              "respondentId": "A7vrJ2l",
+              "formId": "VL01Da",
+              "formName": "Real Estate Deal Submission",
+              "createdAt": "2026-02-19T16:49:11.000Z",
+              "fields": [
+                {
+                  "key": "question_RzLPNj",
+                  "label": "Agent Name",
+                  "type": "INPUT_TEXT",
+                  "value": "Alex"
+                },
+                {
+                  "key": "question_oAOGPx",
+                  "label": "Agent Email",
+                  "type": "INPUT_EMAIL",
+                  "value": "khaliqnoor369@gmail.com"
+                },
+                {
+                  "key": "question_Gr0lGk",
+                  "label": "Property Price",
+                  "type": "INPUT_NUMBER",
+                  "value": 300000
+                },
+                {
+                  "key": "question_OA0G2g",
+                  "label": "Commision Percent",
+                  "type": "INPUT_NUMBER",
+                  "value": 4
+                },
+                {
+                  "key": "question_VZ8Jey",
+                  "label": "Agent Level",
+                  "type": "DROPDOWN",
+                  "value": [
+                    "452726b0-d060-49a3-a3f9-05e19de1d0f3"
+                  ],
+                  "options": [
+                    {
+                      "id": "452726b0-d060-49a3-a3f9-05e19de1d0f3",
+                      "text": "Senior"
+                    },
+                    {
+                      "id": "1df32e10-04e5-4e9d-a777-992ebf529074",
+                      "text": "Junior"
+                    }
+                  ]
+                },
+                {
+                  "key": "question_XeqWqP",
+                  "label": "Client Name",
+                  "type": "INPUT_TEXT",
+                  "value": "Bryan"
+                },
+                {
+                  "key": "question_PA0Oxe",
+                  "label": "Property Address(optional)",
+                  "type": "INPUT_TEXT",
+                  "value": "Dallas"
+                },
+                {
+                  "key": "question_EP0WRr",
+                  "label": "Refferal Agent",
+                  "type": "INPUT_TEXT",
+                  "value": "Max"
+                },
+                {
+                  "key": "question_PA05YB",
+                  "label": "Closing Date",
+                  "type": "INPUT_DATE",
+                  "value": "2026-02-03"
+                }
+              ]
+            }
+          },
+          "webhookUrl": "https://sufyan121121.app.n8n.cloud/webhook/deal-submission",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Deal Submission Webhook": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Validate Required Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Required Fields": {
+      "main": [
+        [
+          {
+            "node": "Clean and Structure Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop - Missing Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean and Structure Data": {
+      "main": [
+        [
+          {
+            "node": "Calculate Commissions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Commissions": {
+      "main": [
+        [
+          {
+            "node": "Check for Duplicate Deal ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Duplicate Deal ID": {
+      "main": [
+        [
+          {
+            "node": "Store Deal in Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Deal in Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Prepare Agent Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Broker Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Finance Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Agent Email": {
+      "main": [
+        [
+          {
+            "node": "Email Agent - Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Broker Email": {
+      "main": [
+        [
+          {
+            "node": "Email Broker - Approval Needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Finance Email": {
+      "main": [
+        [
+          {
+            "node": "Email Finance - Payout Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Agent - Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Merge Notification Branches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Broker - Approval Needed": {
+      "main": [
+        [
+          {
+            "node": "Merge Notification Branches",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Email Finance - Payout Details": {
+      "main": [
+        [
+          {
+            "node": "Merge Notification Branches",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge Notification Branches": {
+      "main": [
+        [
+          {
+            "node": "Wait for Broker Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Broker Approval": {
+      "main": [
+        [
+          {
+            "node": "Route by Approval Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Approval Decision": {
+      "main": [
+        [
+          {
+            "node": "Update Status - Approved",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Status - Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status - Rejected": {
+      "main": [
+        [
+          {
+            "node": "Update Sheet - Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Sheet - Rejected": {
+      "main": [
+        [
+          {
+            "node": "Email Agent - Rejection Notice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status - Approved": {
+      "main": [
+        [
+          {
+            "node": "Update Sheet - Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Sheet - Approved": {
+      "main": [
+        [
+          {
+            "node": "Prepare Payout Instructions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Payout Instructions": {
+      "main": [
+        [
+          {
+            "node": "Send Payout to Finance System",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Payout to Finance System": {
+      "main": [
+        [
+          {
+            "node": "Update Status - Paid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status - Paid": {
+      "main": [
+        [
+          {
+            "node": "Update Sheet - Paid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Sheet - Paid": {
+      "main": [
+        [
+          {
+            "node": "Email Agent - Payout Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "96493891-3271-4a91-bfef-9ebd806de872",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "83ae8b44b066dbb0b1c95786d74e435affffe327137ab0d7d6c219b6ae0cf73b"
+  },
+  "id": "6BYLROCQkN0gdhKc",
+  "tags": []
+}
